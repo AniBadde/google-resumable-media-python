@@ -19,8 +19,8 @@ uploads that contain both metadata and a small file as payload.
 """
 
 
-from google.resumable_media import _upload
-from google.resumable_media.requests import _helpers
+from google.async_resumable_media import _upload
+from google.async_resumable_media.requests import _helpers
 
 
 class SimpleUpload(_helpers.RequestsMixin, _upload.SimpleUpload):
@@ -38,7 +38,7 @@ class SimpleUpload(_helpers.RequestsMixin, _upload.SimpleUpload):
         upload_url (str): The URL where the content will be uploaded.
     """
 
-    def transmit(self, transport, data, content_type):
+    async def transmit(self, transport, data, content_type):
         """Transmit the resource to be uploaded.
 
         Args:
@@ -52,7 +52,8 @@ class SimpleUpload(_helpers.RequestsMixin, _upload.SimpleUpload):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         method, url, payload, headers = self._prepare_request(data, content_type)
-        response = _helpers.http_request(
+
+        response = await _helpers.http_request(
             transport,
             method,
             url,
@@ -79,7 +80,7 @@ class MultipartUpload(_helpers.RequestsMixin, _upload.MultipartUpload):
         upload_url (str): The URL where the content will be uploaded.
     """
 
-    def transmit(self, transport, data, metadata, content_type):
+    async def transmit(self, transport, data, metadata, content_type):
         """Transmit the resource to be uploaded.
 
         Args:
@@ -97,7 +98,7 @@ class MultipartUpload(_helpers.RequestsMixin, _upload.MultipartUpload):
         method, url, payload, headers = self._prepare_request(
             data, metadata, content_type
         )
-        response = _helpers.http_request(
+        response = await _helpers.http_request(
             transport,
             method,
             url,
@@ -105,8 +106,6 @@ class MultipartUpload(_helpers.RequestsMixin, _upload.MultipartUpload):
             headers=headers,
             retry_strategy=self._retry_strategy,
         )
-
-     
         self._process_response(response)
         return response
 
@@ -294,7 +293,7 @@ class ResumableUpload(_helpers.RequestsMixin, _upload.ResumableUpload):
             :data:`.UPLOAD_CHUNK_SIZE`.
     """
 
-    def initiate(
+    async def initiate(
         self,
         transport,
         stream,
@@ -344,7 +343,7 @@ class ResumableUpload(_helpers.RequestsMixin, _upload.ResumableUpload):
             total_bytes=total_bytes,
             stream_final=stream_final,
         )
-        response = _helpers.http_request(
+        response = await _helpers.http_request(
             transport,
             method,
             url,
@@ -355,7 +354,7 @@ class ResumableUpload(_helpers.RequestsMixin, _upload.ResumableUpload):
         self._process_initiate_response(response)
         return response
 
-    def transmit_next_chunk(self, transport):
+    async def transmit_next_chunk(self, transport):
         """Transmit the next chunk of the resource to be uploaded.
 
         If the current upload was initiated with ``stream_final=False``,
@@ -418,7 +417,7 @@ class ResumableUpload(_helpers.RequestsMixin, _upload.ResumableUpload):
                 code is not 200 or 308.
         """
         method, url, payload, headers = self._prepare_request()
-        response = _helpers.http_request(
+        response = await _helpers.http_request(
             transport,
             method,
             url,
@@ -429,7 +428,7 @@ class ResumableUpload(_helpers.RequestsMixin, _upload.ResumableUpload):
         self._process_response(response, len(payload))
         return response
 
-    def recover(self, transport):
+    async def recover(self, transport):
         """Recover from a failure.
 
         This method should be used when a :class:`ResumableUpload` is in an
@@ -448,7 +447,7 @@ class ResumableUpload(_helpers.RequestsMixin, _upload.ResumableUpload):
         """
         method, url, payload, headers = self._prepare_recover_request()
         # NOTE: We assume "payload is None" but pass it along anyway.
-        response = _helpers.http_request(
+        response = await _helpers.http_request(
             transport,
             method,
             url,
