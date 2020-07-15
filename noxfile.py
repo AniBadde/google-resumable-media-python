@@ -14,9 +14,11 @@
 
 from __future__ import absolute_import
 import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "tests/system/credentials.json.enc"
 
 import nox
 
+#GOOGLE_APPLICATION_CREDENTIALS = tests_async/system/credentials.json.enc
 
 SYSTEM_TEST_ENV_VARS = (
     'GOOGLE_APPLICATION_CREDENTIALS',
@@ -24,13 +26,15 @@ SYSTEM_TEST_ENV_VARS = (
 GOOGLE_AUTH = 'google-auth >= 0.10.0'
 
 
-@nox.session(python=['2.7', '3.5', '3.6', '3.7', '3.8'])
+@nox.session(python=['2.7','3.6', '3.7', '3.8'])
 def unit(session):
     """Run the unit test suite."""
 
     # Install all test dependencies, then install this package in-place.
-    session.install('mock', 'pytest', 'pytest-cov')
+    session.install('mock', 'pytest', 'pytest-cov', 'pytest-asyncio')
     session.install('-e', '.[requests]')
+    if session.python.startswith("3"):
+        session.install('aiohttp')
 
     # Run py.test against the unit tests.
     # NOTE: We don't require 100% line coverage for unit test runs since
@@ -45,6 +49,7 @@ def unit(session):
         '--cov-report=',
         line_coverage,
         os.path.join('tests', 'unit'),
+        os.path.join('tests_async', 'unit'),
         *session.posargs
     )
 
@@ -137,13 +142,17 @@ def system(session):
 
     # Install all test dependencies, then install this package into the
     # virutalenv's dist-packages.
+    session.install('/home/anirudhbaddepu/storage/google-auth-library-python')
     session.install('mock', 'pytest', GOOGLE_AUTH)
     session.install('-e', '.[requests]')
+    if session.python.startswith("3"):
+        session.install('aiohttp')
 
     # Run py.test against the system tests.
     session.run(
         'py.test',
         os.path.join('tests', 'system'),
+        os.path.join('tests_async', 'system'),
         *session.posargs
     )
 

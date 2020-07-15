@@ -19,7 +19,7 @@ import pytest
 import mock
 from six.moves import http_client
 import aiohttp
-from aioresponses import aioresponses
+#from aioresponses import aioresponses
 
 import asyncio
 
