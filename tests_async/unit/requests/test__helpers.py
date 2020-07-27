@@ -57,7 +57,7 @@ class TestRawRequestsMixin(object):
 
 @pytest.mark.asyncio
 async def test_http_request():
-    transport, responses = _make_transport(http_client.OK)
+    transport = _make_transport(http_client.OK)
     method = u"POST"
     url = u"http://test.invalid"
     data = mock.sentinel.data
@@ -74,6 +74,8 @@ async def test_http_request():
         timeout=timeout,
     )
 
+    #breakpoint()
+
     transport.request.assert_called_once_with(
         method,
         url,
@@ -86,9 +88,10 @@ async def test_http_request():
 
 @pytest.mark.asyncio
 async def test_http_request_defaults():
-    transport, responses = _make_transport(http_client.OK)
+    transport = _make_transport(http_client.OK)
     method = u"POST"
     url = u"http://test.invalid"
+    #breakpoint()
     ret_val = await _helpers.http_request(transport, method, url)
 
     transport.request.assert_called_once_with(
@@ -97,11 +100,10 @@ async def test_http_request_defaults():
 
 
 def _make_response(status_code):
-    return mock.AsyncMock(status_code=status_code, spec=["status_code"])
+    return mock.AsyncMock(status=status_code, spec=["status"])
 
 
-def _make_transport(*status_codes):
+def _make_transport(status_code):
     transport = mock.AsyncMock(spec=["request"])
-    responses = [_make_response(status_code) for status_code in status_codes]
-    transport.request = mock.AsyncMock(spec = ["__call__"], side_affect = responses)
-    return transport, responses
+    transport.request = mock.AsyncMock(spec = ["__call__"], return_value = _make_response(status_code))
+    return transport

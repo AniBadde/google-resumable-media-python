@@ -213,6 +213,7 @@ class TestMultipartUpload(object):
 
     def test__prepare_request(self):
         headers, multipart_type = self._prepare_request_helper()
+        #breakpoint()
         assert headers == {u"content-type": multipart_type}
 
     def test__prepare_request_with_headers(self):

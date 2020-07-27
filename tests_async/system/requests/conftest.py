@@ -28,39 +28,38 @@
 import google.auth
 import google.auth.transport.aiohttp_req as tr_requests
 import pytest
+import http
+
+http.client.HTTPConnection.debuglevel=5
 
 
 from tests.system import utils
 
 
 async def ensure_bucket(transport):
-    get_response = await transport.get(utils.BUCKET_URL)
-    #breakpoint()
+    get_response = await transport.request('GET', utils.BUCKET_URL)
     if get_response.status == 404:
         credentials = transport.credentials
-        #query_params = {"project": 'anirudhbaddepu-2020-intern'}
         query_params = {"project": credentials.project_id}
+        #breakpoint()
         payload = {"name": utils.BUCKET_NAME}
-        post_response = await transport.post(
-            utils.BUCKET_POST_URL, params=query_params, json=payload
-        )
-
-        if not (post_response == 200):
+        post_response = await transport.request('POST', utils.BUCKET_POST_URL, params=query_params, json=payload) 
+        #breakpoint()
+        if not (post_response.status == 200):
             raise ValueError(
                 "{}: {}".format(post_response.status, post_response.reason)
             )
 
 
 async def cleanup_bucket(transport):
-    del_response = await transport.delete(utils.BUCKET_URL)
+    del_response = await transport.request('DELETE', utils.BUCKET_URL)
 
     if not (del_response == 200):
         raise ValueError("{}: {}".format(del_response.status, del_response.reason))
 
-
 @pytest.fixture(scope=u"session")
-def authorized_transport():
-    credentials, project_id = google.auth.default(scopes=(utils.GCS_RW_SCOPE,))
+async def authorized_transport():
+    credentials, project_id = google.auth.default_async(scopes=(utils.GCS_RW_SCOPE,))
     #breakpoint()
     yield tr_requests.AuthorizedSession(credentials)
 

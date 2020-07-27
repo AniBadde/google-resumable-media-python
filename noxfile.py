@@ -14,11 +14,10 @@
 
 from __future__ import absolute_import
 import os
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "tests/system/credentials.json.enc"
+
 
 import nox
 
-#GOOGLE_APPLICATION_CREDENTIALS = tests_async/system/credentials.json.enc
 
 SYSTEM_TEST_ENV_VARS = (
     'GOOGLE_APPLICATION_CREDENTIALS',
@@ -143,7 +142,7 @@ def system(session):
     # Install all test dependencies, then install this package into the
     # virutalenv's dist-packages.
     session.install('/home/anirudhbaddepu/storage/google-auth-library-python')
-    session.install('mock', 'pytest', GOOGLE_AUTH)
+    session.install('mock', 'pytest', GOOGLE_AUTH, 'pytest-asyncio')
     session.install('-e', '.[requests]')
     if session.python.startswith("3"):
         session.install('aiohttp')
@@ -151,7 +150,8 @@ def system(session):
     # Run py.test against the system tests.
     session.run(
         'py.test',
-        os.path.join('tests', 'system'),
+        '-s',
+        #os.path.join('tests', 'system'),
         os.path.join('tests_async', 'system'),
         *session.posargs
     )

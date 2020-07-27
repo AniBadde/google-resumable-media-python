@@ -273,6 +273,9 @@ class MultipartUpload(UploadBase):
             data, metadata, content_type
         )
         multipart_content_type = _RELATED_HEADER + multipart_boundary + b'"'
+
+        #self._headers[_CONTENT_TYPE_HEADER] = multipart_content_type.decode("utf-8")
+
         self._headers[_CONTENT_TYPE_HEADER] = multipart_content_type
 
         return _POST, self.upload_url, content, self._headers

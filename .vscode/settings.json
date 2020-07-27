@@ -1,0 +1,9 @@
+{
+    "python.pythonPath": "/home/anirudhbaddepu/storage/google-resumable-media-python/.nox/system-3-8/bin/python",
+    "python.testing.pytestPath": "/home/anirudhbaddepu/storage/google-resumable-media-python/.nox/system-3-8/bin/pytest",
+    "python.testing.cwd": "",
+    "python.testing.pytestEnabled": true,
+    "python.terminal.launchArgs": [
+    
+    ]
+}

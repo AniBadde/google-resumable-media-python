@@ -72,7 +72,7 @@ class Download(_helpers.RequestsMixin, _download.Download):
         end (Optional[int]): The last byte in a range to be downloaded.
     """
 
-    def _write_to_stream(self, response):
+    async def _write_to_stream(self, response):
         """Write response body to a write-able stream.
 
         .. note:
@@ -95,16 +95,28 @@ class Download(_helpers.RequestsMixin, _download.Download):
             md5_hash = _DoNothingHash()
         else:
             md5_hash = hashlib.md5()
-        with response:
+
+        '''
+        async with response:
+
             # NOTE: This might "donate" ``md5_hash`` to the decoder and replace
             #       it with a ``_DoNothingHash``.
-            local_hash = _add_decoder(response.raw, md5_hash)
-            body_iter = response.iter_content(
-                chunk_size=_helpers._SINGLE_GET_CHUNK_SIZE, decode_unicode=False
+            #breakpoint()
+            #content = await response.content.read()
+            local_hash = _add_decoder(response, md5_hash)
+            
+            body_iter = await response.content.read(
+                _helpers._SINGLE_GET_CHUNK_SIZE
             )
-            for chunk in body_iter:
+            
+            async for chunk in response.content.iter_chunked(_helpers._SINGLE_GET_CHUNK_SIZE):
+                #breakpoint()
                 self._stream.write(chunk)
                 local_hash.update(chunk)
+        '''
+
+        while True:
+            chunk = await response.content.read(_helpers._SINGLE_GET_CHUNK_SIZE)
 
         if expected_md5_hash is None:
             return
@@ -145,15 +157,20 @@ class Download(_helpers.RequestsMixin, _download.Download):
             u"headers": headers,
             u"retry_strategy": self._retry_strategy,
         }
+        
+        #breakpoint()
+
         if self._stream is not None:
             request_kwargs[u"stream"] = True
 
         result = await _helpers.http_request(transport, method, url, **request_kwargs)
 
+        #breakpoint()
+
         self._process_response(result)
 
         if self._stream is not None:
-            self._write_to_stream(result)
+            await self._write_to_stream(result)
 
         return result
 
@@ -259,7 +276,7 @@ class RawDownload(_helpers.RawRequestsMixin, _download.Download):
             data=payload,
             headers=headers,
             retry_strategy=self._retry_strategy,
-            stream=True,
+            #stream=True,
         )
 
         self._process_response(result)

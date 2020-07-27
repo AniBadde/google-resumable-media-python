@@ -150,7 +150,9 @@ async def wait_and_retry(func, get_status_code, retry_strategy):
     Returns:
         object: The return value of ``func``.
     """
+
     response = await func()
+   
     if get_status_code(response) not in RETRYABLE:
         return response
 

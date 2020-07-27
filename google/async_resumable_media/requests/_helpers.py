@@ -51,7 +51,7 @@ class RequestsMixin(object):
         Returns:
             int: The status code.
         """
-        return response.status_code
+        return response.status
 
     @staticmethod
     def _get_headers(response):
@@ -127,7 +127,9 @@ async def http_request(
     Returns:
         ~requests.Response: The return value of ``transport.request()``.
     """
+
     #TODO(anirudhbaddepu) - look at default connect timeout and default read timeout
+
     if "timeout" not in transport_kwargs:
         transport_kwargs["timeout"] = (_DEFAULT_CONNECT_TIMEOUT, _DEFAULT_READ_TIMEOUT)
 

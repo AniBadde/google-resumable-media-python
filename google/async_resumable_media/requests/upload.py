@@ -52,7 +52,7 @@ class SimpleUpload(_helpers.RequestsMixin, _upload.SimpleUpload):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         method, url, payload, headers = self._prepare_request(data, content_type)
-
+        #breakpoint()
         response = await _helpers.http_request(
             transport,
             method,
@@ -98,6 +98,7 @@ class MultipartUpload(_helpers.RequestsMixin, _upload.MultipartUpload):
         method, url, payload, headers = self._prepare_request(
             data, metadata, content_type
         )
+        #breakpoint()
         response = await _helpers.http_request(
             transport,
             method,

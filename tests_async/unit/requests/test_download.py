@@ -33,7 +33,9 @@ EXPECTED_TIMEOUT = (61, 60)
 
 
 class TestDownload(object):
-    def test__write_to_stream_no_hash_check(self):
+
+    @pytest.mark.asyncio
+    async def test__write_to_stream_no_hash_check(self):
         stream = io.BytesIO()
         download = download_mod.Download(EXAMPLE_URL, stream=stream)
 
@@ -41,7 +43,7 @@ class TestDownload(object):
         chunk2 = b"but a little later"
         response = _mock_response(chunks=[chunk1, chunk2], headers={})
 
-        ret_val = download._write_to_stream(response)
+        ret_val = await download._write_to_stream(response)
         assert ret_val is None
 
         assert stream.getvalue() == chunk1 + chunk2
@@ -53,7 +55,8 @@ class TestDownload(object):
             chunk_size=_helpers._SINGLE_GET_CHUNK_SIZE, decode_unicode=False
         )
 
-    def test__write_to_stream_with_hash_check_success(self):
+    @pytest.mark.asyncio
+    async def test__write_to_stream_with_hash_check_success(self):
         stream = io.BytesIO()
         download = download_mod.Download(EXAMPLE_URL, stream=stream)
 
@@ -64,7 +67,7 @@ class TestDownload(object):
         headers = {download_mod._HASH_HEADER: header_value}
         response = _mock_response(chunks=[chunk1, chunk2, chunk3], headers=headers)
 
-        ret_val = download._write_to_stream(response)
+        ret_val = await download._write_to_stream(response)
         assert ret_val is None
 
         assert stream.getvalue() == chunk1 + chunk2 + chunk3
@@ -76,7 +79,8 @@ class TestDownload(object):
             chunk_size=_helpers._SINGLE_GET_CHUNK_SIZE, decode_unicode=False
         )
 
-    def test__write_to_stream_with_hash_check_fail(self):
+    @pytest.mark.asyncio
+    async def test__write_to_stream_with_hash_check_fail(self):
         stream = io.BytesIO()
         download = download_mod.Download(EXAMPLE_URL, stream=stream)
 
@@ -89,7 +93,7 @@ class TestDownload(object):
         response = _mock_response(chunks=[chunk1, chunk2, chunk3], headers=headers)
 
         with pytest.raises(common.DataCorruption) as exc_info:
-            download._write_to_stream(response)
+            await download._write_to_stream(response)
 
         assert not download.finished
 
@@ -233,15 +237,16 @@ class TestDownload(object):
 
 
 class TestRawDownload(object):
-    def test__write_to_stream_no_hash_check(self):
+
+    @pytest.mark.asyncio
+    async def test__write_to_stream_no_hash_check(self):
         stream = io.BytesIO()
         download = download_mod.RawDownload(EXAMPLE_URL, stream=stream)
 
         chunk1 = b"right now, "
         chunk2 = b"but a little later"
         response = _mock_raw_response(chunks=[chunk1, chunk2], headers={})
-
-        ret_val = download._write_to_stream(response)
+        ret_val = await download._write_to_stream(response)
         assert ret_val is None
 
         assert stream.getvalue() == chunk1 + chunk2
@@ -253,7 +258,8 @@ class TestRawDownload(object):
             _helpers._SINGLE_GET_CHUNK_SIZE, decode_content=False
         )
 
-    def test__write_to_stream_with_hash_check_success(self):
+    @pytest.mark.asyncio
+    async def test__write_to_stream_with_hash_check_success(self):
         stream = io.BytesIO()
         download = download_mod.RawDownload(EXAMPLE_URL, stream=stream)
 
@@ -264,7 +270,7 @@ class TestRawDownload(object):
         headers = {download_mod._HASH_HEADER: header_value}
         response = _mock_raw_response(chunks=[chunk1, chunk2, chunk3], headers=headers)
 
-        ret_val = download._write_to_stream(response)
+        ret_val = await download._write_to_stream(response)
         assert ret_val is None
 
         assert stream.getvalue() == chunk1 + chunk2 + chunk3
@@ -276,7 +282,8 @@ class TestRawDownload(object):
             _helpers._SINGLE_GET_CHUNK_SIZE, decode_content=False
         )
 
-    def test__write_to_stream_with_hash_check_fail(self):
+    @pytest.mark.asyncio
+    async def test__write_to_stream_with_hash_check_fail(self):
         stream = io.BytesIO()
         download = download_mod.RawDownload(EXAMPLE_URL, stream=stream)
 
@@ -289,7 +296,7 @@ class TestRawDownload(object):
         response = _mock_raw_response(chunks=[chunk1, chunk2, chunk3], headers=headers)
 
         with pytest.raises(common.DataCorruption) as exc_info:
-            download._write_to_stream(response)
+            await download._write_to_stream(response)
 
         assert not download.finished
 
@@ -716,35 +723,36 @@ class Test_GzipDecoder(object):
         md5_hash.update.assert_called_once_with(data)
 
 
-def _mock_response(status_code=http_client.OK, chunks=(), headers=None):
+def _mock_response(status=http_client.OK, chunks=(), headers=None):
     if headers is None:
         headers = {}
 
     if chunks:
-        mock_raw = mock.Mock(headers=headers, spec=["headers"])
+        mock_raw = mock.AsyncMock(headers=headers, spec=["headers"])
         response = mock.MagicMock(
             headers=headers,
-            status_code=int(status_code),
+            status=int(status),
             raw=mock_raw,
             spec=[
-                u"__enter__",
-                u"__exit__",
+                u"__aenter__",
+                u"__aexit__",
                 u"iter_content",
-                u"status_code",
+                u"status",
                 u"headers",
                 u"raw",
+                u"content"
             ],
         )
         # i.e. context manager returns ``self``.
-        response.__enter__.return_value = response
-        response.__exit__.return_value = None
+        response.__aenter__.return_value = response
+        response.__aexit__.return_value = None
         response.iter_content.return_value = iter(chunks)
         return response
     else:
-        return mock.Mock(
+        return mock.AsyncMock(
             headers=headers,
-            status_code=int(status_code),
-            spec=["status_code", "headers"],
+            status=int(status),
+            spec=["status", "headers"],
         )
 
 
@@ -762,9 +770,10 @@ def _mock_raw_response(status_code=http_client.OK, chunks=(), headers=None):
             u"__enter__",
             u"__exit__",
             u"iter_content",
-            u"status_code",
+            u"status",
             u"headers",
             u"raw",
+            u"content",
         ],
     )
     # i.e. context manager returns ``self``.
