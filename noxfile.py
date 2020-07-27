@@ -35,6 +35,9 @@ def unit(session):
     if session.python.startswith("3"):
         session.install('aiohttp')
 
+    if session.python.startswith("3"):
+        session.install('aiohttp')
+
     # Run py.test against the unit tests.
     # NOTE: We don't require 100% line coverage for unit test runs since
     #       some have branches that are Py2/Py3 specific.
@@ -144,6 +147,9 @@ def system(session):
     session.install('/home/anirudhbaddepu/storage/google-auth-library-python')
     session.install('mock', 'pytest', GOOGLE_AUTH, 'pytest-asyncio')
     session.install('-e', '.[requests]')
+    if session.python.startswith("3"):
+        session.install('aiohttp')
+
     if session.python.startswith("3"):
         session.install('aiohttp')
 
