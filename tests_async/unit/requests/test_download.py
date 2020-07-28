@@ -42,7 +42,7 @@ class TestDownload(object):
         chunk1 = b"right now, "
         chunk2 = b"but a little later"
         response = _mock_response(chunks=[chunk1, chunk2], headers={})
-
+        #breakpoint()
         ret_val = await download._write_to_stream(response)
         assert ret_val is None
 
@@ -728,11 +728,15 @@ def _mock_response(status=http_client.OK, chunks=(), headers=None):
         headers = {}
 
     if chunks:
+        chunklist = b"".join(chunks)
+        stream = io.BytesIO(chunklist)
+        #breakpoint()
         mock_raw = mock.AsyncMock(headers=headers, spec=["headers"])
-        response = mock.MagicMock(
+        response = mock.AsyncMock(
             headers=headers,
             status=int(status),
             raw=mock_raw,
+            content = stream,
             spec=[
                 u"__aenter__",
                 u"__aexit__",
@@ -746,7 +750,6 @@ def _mock_response(status=http_client.OK, chunks=(), headers=None):
         # i.e. context manager returns ``self``.
         response.__aenter__.return_value = response
         response.__aexit__.return_value = None
-        response.iter_content.return_value = iter(chunks)
         return response
     else:
         return mock.AsyncMock(

@@ -16,6 +16,7 @@
 
 
 import re
+import copy
 
 #from six.moves import http_client
 import aiohttp
@@ -309,7 +310,7 @@ class ChunkedDownload(DownloadBase):
         """
         self._invalid = True
 
-    def _process_response(self, response):
+    async def _process_response(self, response):
         """Process the response from an HTTP request.
 
         This is everything that must be done after a request that doesn't
@@ -372,7 +373,13 @@ class ChunkedDownload(DownloadBase):
                 callback=self._make_invalid,
             )
             num_bytes = int(content_length)
-            if len(response_body) != num_bytes:
+
+            responsebody1 = copy.copy(response_body)
+            responsebody = await responsebody1.read()
+
+            #breakpoint()
+
+            if len(responsebody) != num_bytes:
                 self._make_invalid()
                 raise common.InvalidResponse(
                     response,
@@ -380,7 +387,7 @@ class ChunkedDownload(DownloadBase):
                     u"Expected",
                     num_bytes,
                     u"Received",
-                    len(response_body),
+                    len(responsebody),
                 )
         else:
             # 'content-length' header not allowed with chunked encoding.
@@ -397,7 +404,7 @@ class ChunkedDownload(DownloadBase):
         if self.total_bytes is None:
             self._total_bytes = total_bytes
         # Write the response body to the stream.
-        self._stream.write(response_body)
+        self._stream.write(responsebody)
 
     def consume_next_chunk(self, transport):
         """Consume the next chunk of the resource to be downloaded.

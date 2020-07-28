@@ -116,7 +116,13 @@ class Download(_helpers.RequestsMixin, _download.Download):
         '''
 
         while True:
-            chunk = await response.content.read(_helpers._SINGLE_GET_CHUNK_SIZE)
+            #breakpoint()
+            content = await response.content
+            chunk = content.read(_helpers._SINGLE_GET_CHUNK_SIZE)
+            if not chunk:
+                break
+            self._stream.write(chunk)
+            local_hash.update(chunk)
 
         if expected_md5_hash is None:
             return
@@ -338,7 +344,8 @@ class ChunkedDownload(_helpers.RequestsMixin, _download.ChunkedDownload):
             headers=headers,
             retry_strategy=self._retry_strategy,
         )
-        self._process_response(result)
+
+        await self._process_response(result)
         return result
 
 

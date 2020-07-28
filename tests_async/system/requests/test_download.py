@@ -471,7 +471,9 @@ async def consume_chunks(download, authorized_transport, total_bytes, actual_con
         assert download.bytes_downloaded == next_byte - download.start
         assert download.total_bytes == total_bytes
         assert response.status == http_client.PARTIAL_CONTENT
-        assert response.content == actual_contents[start_byte:next_byte]
+        content = await response.content.read()
+        #breakpoint()
+        assert content == actual_contents[start_byte:next_byte]
         start_byte = next_byte
 
     return num_responses, response
@@ -553,7 +555,8 @@ class TestChunkedDownload(object):
         # Check that we have the right number of responses.
         assert num_responses == num_chunks
         # Make sure the last chunk isn't the same size.
-        assert len(last_response.content) < chunk_size
+        content = await last_response.read()
+        assert len(content) < chunk_size
         await check_tombstoned(download, authorized_transport)
         # Attempt to consume the resource **without** the headers.
         stream_wo = io.BytesIO()

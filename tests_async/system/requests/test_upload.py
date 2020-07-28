@@ -140,18 +140,21 @@ async def check_content(blob_name, expected_content, transport, headers=None):
 async def check_tombstoned(upload, transport, *args):
     assert upload.finished
     basic_types = (resumable_requests.SimpleUpload, resumable_requests.MultipartUpload)
+    #CHANGE EXCEPTION
     if isinstance(upload, basic_types):
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception) as exc:
             await upload.transmit(transport, *args)
     else:
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             await upload.transmit_next_chunk(transport, *args)
+    print(a)
 
 async def check_does_not_exist(transport, blob_name):
     metadata_url = utils.METADATA_URL_TEMPLATE.format(blob_name=blob_name)
     # Make sure we are creating a **new** object.
-    response = await transport.request('GET', metadata_url)
-    assert response.status == http_client.NOT_FOUND
+    with pytest.raises(Exception) as exc:
+        response = await transport.request('GET', metadata_url)
+        assert response.status == http_client.NOT_FOUND
 
 
 async def check_initiate(response, upload, stream, transport, metadata):

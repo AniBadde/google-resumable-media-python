@@ -131,7 +131,8 @@ async def http_request(
     #TODO(anirudhbaddepu) - look at default connect timeout and default read timeout
 
     if "timeout" not in transport_kwargs:
-        transport_kwargs["timeout"] = (_DEFAULT_CONNECT_TIMEOUT, _DEFAULT_READ_TIMEOUT)
+        #transport_kwargs["timeout"] = (_DEFAULT_CONNECT_TIMEOUT, _DEFAULT_READ_TIMEOUT)
+        transport_kwargs["timeout"] = _DEFAULT_CONNECT_TIMEOUT
 
     func = functools.partial(
         transport.request, method, url, data=data, headers=headers, **transport_kwargs
