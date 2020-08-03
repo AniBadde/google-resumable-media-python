@@ -359,6 +359,9 @@ class ChunkedDownload(DownloadBase):
         headers = self._get_headers(response)
         response_body = self._get_body(response)
 
+        responsebody1 = copy.copy(response_body)
+        responsebody = await responsebody1.read()
+
         start_byte, end_byte, total_bytes = get_range_info(
             response, self._get_headers, callback=self._make_invalid
         )
@@ -373,11 +376,6 @@ class ChunkedDownload(DownloadBase):
                 callback=self._make_invalid,
             )
             num_bytes = int(content_length)
-
-            responsebody1 = copy.copy(response_body)
-            responsebody = await responsebody1.read()
-
-            #breakpoint()
 
             if len(responsebody) != num_bytes:
                 self._make_invalid()

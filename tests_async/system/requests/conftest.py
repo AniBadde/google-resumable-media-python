@@ -26,7 +26,7 @@
 #import google.auth
 #import google.auth.transport.requests as tr_requests 
 import google.auth
-import google.auth.transport.aiohttp_req as tr_requests
+import google.auth.transport.aiohttp_requests as tr_requests
 import pytest
 import http
 

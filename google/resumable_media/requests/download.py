@@ -96,6 +96,7 @@ class Download(_helpers.RequestsMixin, _download.Download):
         else:
             md5_hash = hashlib.md5()
         with response:
+            #breakpoint()
             # NOTE: This might "donate" ``md5_hash`` to the decoder and replace
             #       it with a ``_DoNothingHash``.
             local_hash = _add_decoder(response.raw, md5_hash)

@@ -97,30 +97,18 @@ class Download(_helpers.RequestsMixin, _download.Download):
             md5_hash = hashlib.md5()
 
         '''
-        async with response:
-
-            # NOTE: This might "donate" ``md5_hash`` to the decoder and replace
-            #       it with a ``_DoNothingHash``.
-            #breakpoint()
-            #content = await response.content.read()
+        while True:
+            breakpoint()
+            chunk = await response.content.read(1)
             local_hash = _add_decoder(response, md5_hash)
-            
-            body_iter = await response.content.read(
-                _helpers._SINGLE_GET_CHUNK_SIZE
-            )
-            
-            async for chunk in response.content.iter_chunked(_helpers._SINGLE_GET_CHUNK_SIZE):
-                #breakpoint()
-                self._stream.write(chunk)
-                local_hash.update(chunk)
+            if chunk == b'':
+                break
+            self._stream.write(chunk)
+            local_hash.update(chunk)
         '''
 
-        while True:
-            #breakpoint()
-            content = await response.content
-            chunk = content.read(_helpers._SINGLE_GET_CHUNK_SIZE)
-            if not chunk:
-                break
+        local_hash = _add_decoder(response, md5_hash)     
+        async for chunk in response.content.iter_chunked(_helpers._SINGLE_GET_CHUNK_SIZE):
             self._stream.write(chunk)
             local_hash.update(chunk)
 
@@ -207,7 +195,7 @@ class RawDownload(_helpers.RawRequestsMixin, _download.Download):
         end (Optional[int]): The last byte in a range to be downloaded.
     """
 
-    def _write_to_stream(self, response):
+    async def _write_to_stream(self, response):
         """Write response body to a write-able stream.
 
         .. note:
@@ -230,16 +218,24 @@ class RawDownload(_helpers.RawRequestsMixin, _download.Download):
             md5_hash = _DoNothingHash()
         else:
             md5_hash = hashlib.md5()
-        with response:
-            # NOTE: This might "donate" ``md5_hash`` to the decoder and replace
-            #       it with a ``_DoNothingHash``.
-            body_iter = response.raw.stream(
-                _helpers._SINGLE_GET_CHUNK_SIZE, decode_content=False
-            )
-            for chunk in body_iter:
-                self._stream.write(chunk)
-                md5_hash.update(chunk)
-            response._content_consumed = True
+
+     
+        # NOTE: This might "donate" ``md5_hash`` to the decoder and replace
+        #       it with a ``_DoNothingHash``.
+        '''
+        body_iter = response.raw.stream(
+            _helpers._SINGLE_GET_CHUNK_SIZE, decode_content=False
+        )
+        for chunk in body_iter:
+            self._stream.write(chunk)
+            md5_hash.update(chunk)
+        
+        response._content_consumed = True
+        '''
+
+        async for chunk in response.iter_chunked(_helpers._SINGLE_GET_CHUNK_SIZE):
+            self._stream.write(chunk)
+            md5_hash.update(chunk)
 
         if expected_md5_hash is None:
             return
@@ -282,13 +278,13 @@ class RawDownload(_helpers.RawRequestsMixin, _download.Download):
             data=payload,
             headers=headers,
             retry_strategy=self._retry_strategy,
-            #stream=True,
+            #stream = True
         )
 
         self._process_response(result)
 
         if self._stream is not None:
-            self._write_to_stream(result)
+           await  self._write_to_stream(result)
 
         return result
 
@@ -398,10 +394,10 @@ class RawChunkedDownload(_helpers.RawRequestsMixin, _download.ChunkedDownload):
             url,
             data=payload,
             headers=headers,
-            stream=True,
+            #stream=True,
             retry_strategy=self._retry_strategy,
         )
-        self._process_response(result)
+        await self._process_response(result)
         return result
 
 
@@ -513,6 +509,7 @@ def _add_decoder(response_raw, md5_hash):
         if ``_decoder`` is not patched. Otherwise, returns a ``_DoNothingHash``
         since the caller will no longer need to hash to decoded bytes.
     """
+    #breakpoint()
     encoding = response_raw.headers.get(u"content-encoding", u"").lower()
     if encoding != u"gzip":
         return md5_hash

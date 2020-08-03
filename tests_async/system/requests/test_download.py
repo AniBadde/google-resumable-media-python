@@ -19,7 +19,7 @@ import io
 import os
 
 import google.auth
-import google.auth.transport.aiohttp_req as tr_requests
+import google.auth.transport.aiohttp_requests as tr_requests
 import pytest
 from six.moves import http_client
 

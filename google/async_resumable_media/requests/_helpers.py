@@ -91,9 +91,7 @@ class RawRequestsMixin(RequestsMixin):
             bytes: The body of the ``response``.
         """
         if response._content is False:
-            response._content = b"".join(
-                response.raw.stream(_SINGLE_GET_CHUNK_SIZE, decode_content=False)
-            )
+            response._content = response.content
             response._content_consumed = True
         return response._content
 

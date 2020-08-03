@@ -44,7 +44,7 @@ ONE_MB = 1024 * 1024
 BASIC_CONTENT = u"text/plain"
 JSON_TYPE = u"application/json; charset=UTF-8"
 JSON_TYPE_LINE = b"content-type: application/json; charset=UTF-8\r\n"
-EXPECTED_TIMEOUT = (61, 60)
+EXPECTED_TIMEOUT = 61
 
 #test by making the upload async for that case
 
@@ -249,5 +249,5 @@ class TestResumableUpload(object):
 def _make_response(status_code=200, headers=None):
     headers = headers or {}
     return mock.Mock(
-        headers=headers, status_code=status_code, spec=["headers", "status_code"]
+        headers=headers, status=status_code, spec=["headers", "status_code"]
     )
