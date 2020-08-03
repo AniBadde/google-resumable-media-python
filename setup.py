@@ -25,6 +25,8 @@ with open(os.path.join(PACKAGE_ROOT, 'README.rst')) as file_obj:
 
 REQUIREMENTS = [
     'six',
+    'google-crc32c >= 0.1.0; python_version>="3.5"',
+    'crcmod >= 1.7; python_version=="2.7"',
 ]
 EXTRAS_REQUIRE = {
     'requests': [
@@ -34,7 +36,7 @@ EXTRAS_REQUIRE = {
 
 setuptools.setup(
     name='google-resumable-media',
-    version = "0.5.1",
+    version = "0.7.0",
     description='Utilities for Google Media Downloads and Resumable Uploads',
     author='Google Cloud Platform',
     author_email='googleapis-publisher@google.com',

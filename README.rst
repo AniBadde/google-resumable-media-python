@@ -1,12 +1,13 @@
 ``google-resumable-media``
 ==========================
 
-    Utilities for Google Media Downloads and Resumable Uploads
+
+Utilities for Google Media Downloads and Resumable Uploads
 
 
 See the `docs`_ for examples and usage.
 
-.. _docs: https://googleapis.github.io/google-resumable-media-python/latest/
+.. _docs: https://googleapis.dev/python/google-resumable-media/latest/index.html
 
 Supported Python Versions
 -------------------------
@@ -21,4 +22,4 @@ License
 
 Apache 2.0 - See `the LICENSE`_ for more information.
 
-.. _the LICENSE: https://github.com/GoogleCloudPlatform/google-resumable-media-python/blob/master/LICENSE
+.. _the LICENSE: https://github.com/googleapis/google-resumable-media-python/blob/master/LICENSE
